@@ -30,12 +30,14 @@ class SlidingPiece < Piece
     #get input from move_dirs
     moves_arr = []
     self.move_dirs.each do |dir|
-      @board.length.times do |i|
+      @board.grid.length.times do |i|
+        p [@pos[0] + dir[0]*i, @pos[1] + dir[1]*i]
         if in_bounds([@pos[0] + dir[0]*i, @pos[1] + dir[1]*i])
           moves_arr << [@pos[0] + dir[0]*i, @pos[1] + dir[1]*i] 
         end
+      end
     end
-    
+    moves_arr.uniq
   end
   
   def in_bounds(pos)
@@ -49,6 +51,7 @@ class Bishop < SlidingPiece
     super(pos, board, color)
     @piece_name = "B"
   end
+  
   def move_dirs
     [ [-1, 1], [1, 1], [-1, -1], [1, -1] ]
   end
@@ -59,6 +62,7 @@ class Rook < SlidingPiece
     super(pos, board, color)
     @piece_name = "R"
   end
+  
   def move_dirs
     [ [1, 0], [0, 1], [-1, 0], [0, -1] ]
   end
@@ -69,6 +73,7 @@ class Queen < SlidingPiece
     super(pos, board, color)
     @piece_name = "Q"
   end
+  
   def move_dirs
     [ [-1, 1], [1, 1], [-1, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [0, -1] ]
   end
@@ -78,6 +83,19 @@ class SteppingPiece < Piece
   def initialize(pos, board, color)
     super(pos, board, color)
   end
+  
+  def move
+    #get input from move_dirs
+    moves_arr = []
+    self.move_dirs.each do |dir|
+      p [@pos[0] + dir[0], @pos[1] + dir[1]]
+      if in_bounds([@pos[0] + dir[0], @pos[1] + dir[1]])
+        moves_arr << [@pos[0] + dir[0], @pos[1] + dir[1]] 
+      end
+    end
+    moves_arr.uniq
+  end
+  
 end
 
 class King < SteppingPiece
@@ -85,6 +103,11 @@ class King < SteppingPiece
     super(pos, board, color)
     @piece_name = "K"
   end
+  
+  def move_dirs
+    [ [-1, 1], [1, 1], [-1, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [0, -1] ]
+  end
+  
 end
 
 class Knight < SteppingPiece
@@ -92,6 +115,11 @@ class Knight < SteppingPiece
     super(pos, board, color)
     @piece_name = "N"
   end
+  
+  def move_dirs
+    [ [1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1] ]
+  end
+  
 end
 
 class Pawn < Piece
