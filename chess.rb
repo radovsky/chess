@@ -17,7 +17,7 @@ class Chess
     end
     end_game
   end
-  
+   
   def display
     @board.grid.each do |row|
       row.each do |tile|
@@ -27,10 +27,14 @@ class Chess
   
   def get_unicode(tile)
     if tile.color == :W 
-      
       case tile
       when nil
       
+      
+      
+    else
+      
+    end
   end
   
   def end_game

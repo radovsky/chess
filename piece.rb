@@ -1,4 +1,4 @@
-
+require 'gosu'
 
 class Piece
   attr_accessor :color, :pos
