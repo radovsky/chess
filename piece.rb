@@ -1,130 +1,49 @@
+
+
 class Piece
+  attr_accessor :color, :pos
+  
+  STRAIGHTS = [ [1, 0], [0, 1], [-1, 0], [0, -1] ]
+  DIAGONALS =  [ [-1, 1], [1, 1], [-1, -1], [1, -1] ]
   def initialize(pos, board, color)
-    @moves = []
     @pos = pos  
     @board = board
     @color = color
-    @captured = false
-    @piece_name = "P"
-  end
-
-      # generates potential moves
-  def moves
-
   end
   
   def to_s
-    "#{@piece_name}_#{@color.to_s}"
+    name = self.class.to_s[0] unless self.class == Knight
+    name = "N" if self.class == Knight
+    "#{name}_#{@color.to_s}"
   end
   
-end
-
-class SlidingPiece < Piece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-  end
-  
- 
-  
-  def move
-    #get input from move_dirs
-    moves_arr = []
-    self.move_dirs.each do |dir|
-      @board.grid.length.times do |i|
-        p [@pos[0] + dir[0]*i, @pos[1] + dir[1]*i]
-        if in_bounds([@pos[0] + dir[0]*i, @pos[1] + dir[1]*i])
-          moves_arr << [@pos[0] + dir[0]*i, @pos[1] + dir[1]*i] 
-        end
-      end
-    end
-    moves_arr.uniq
-  end
-  
-  def in_bounds(pos)
+  def in_bounds?(pos)
     (0..7).include?(pos[0]) && (0..7).include?(pos[1])
   end
-
-end
-
-class Bishop < SlidingPiece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "B"
+  
+  
+  def valid_moves
+    possible_moves = self.moves
+    possible_moves.select {|move| !move_into_check?(move)}
   end
   
-  def move_dirs
-    [ [-1, 1], [1, 1], [-1, -1], [1, -1] ]
-  end
-end
-
-class Rook < SlidingPiece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "R"
+  def collision(sq)
+    !@board.get_piece(sq).nil?
   end
   
-  def move_dirs
-    [ [1, 0], [0, 1], [-1, 0], [0, -1] ]
-  end
-end
-
-class Queen < SlidingPiece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "Q"
+  def move_into_check?(new_pos)
+    new_board = @board.dup
+    new_piece = new_board.grid[@pos[0]][@pos[1]]
+    
+    return false if new_piece.nil?
+    new_board.move!(@pos, new_pos)
+    new_board.in_check?(new_piece.color)
   end
   
-  def move_dirs
-    [ [-1, 1], [1, 1], [-1, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [0, -1] ]
-  end
-end
-
-class SteppingPiece < Piece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-  end
   
-  def move
-    #get input from move_dirs
-    moves_arr = []
-    self.move_dirs.each do |dir|
-      p [@pos[0] + dir[0], @pos[1] + dir[1]]
-      if in_bounds([@pos[0] + dir[0], @pos[1] + dir[1]])
-        moves_arr << [@pos[0] + dir[0], @pos[1] + dir[1]] 
-      end
-    end
-    moves_arr.uniq
+  def dup(new_board)
+    self.class.new(@pos.dup, new_board, @color)    
   end
   
 end
 
-class King < SteppingPiece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "K"
-  end
-  
-  def move_dirs
-    [ [-1, 1], [1, 1], [-1, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [0, -1] ]
-  end
-  
-end
-
-class Knight < SteppingPiece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "N"
-  end
-  
-  def move_dirs
-    [ [1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1] ]
-  end
-  
-end
-
-class Pawn < Piece
-  def initialize(pos, board, color)
-    super(pos, board, color)
-    @piece_name = "P"
-  end
-end
