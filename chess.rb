@@ -2,83 +2,97 @@ require './piece'
 require './board'
 require './stepping_piece'
 require './sliding_piece'
+require 'gosu'
 
-class Chess
+class ChessGame < Gosu::Window
+  
+  attr_accessor :curr_player, :window
+  
   def initialize
-    @board = Board.new
+    super(600, 600, true)
     @curr_player = :W
+    @board = Board.new
+    @board.place_pieces(self)
+    self.caption = "Super Fucking Awesome Chess"
+    @background_image = Gosu::Image.new(self, "./media/600px-Chess_Board.png", true)
   end
   
-  def play
-    until game_complete?
-      display
-      play_turn(@curr_player)
-      switch_player
-    end
-    end_game
-  end
-   
-  def display
-    @board.grid.each do |row|
-      row.each do |tile|
-        get_unicode
-    end
+  def needs_cursor?
+    true
+  end  
+  
+  def update 
+
   end
   
-  def get_unicode(tile)
-    if tile.color == :W 
-      case tile
-      when nil
-      
-      
-      
-    else
-      
+  def button_down(id)
+    
+    if id == Gosu::MsLeft
+      puts "Storing starting pos #{get_mouse_grid}}"
+      @starting_pos = get_mouse_grid
     end
+   
   end
   
-  def end_game
-    if @board.checkmate?(:W)
-      puts "Black player wins!"
-    else
-      puts "White player wins!"
-    end
+  def button_up(id)
+    if id == Gosu::MsLeft
+      @ending_pos = get_mouse_grid
+      moving_piece = @board.get_piece(@starting_pos)
+      
+      if valid_piece(moving_piece)
+        #returns true for properly executed move        
+        if @board.move(@starting_pos,@ending_pos) 
+          switch_player 
+        else
+          puts "Invalid move!"
+        end          
+      end
+    end      
+  end
+  
+  def valid_piece(moving_piece)
+    !moving_piece.nil? && moving_piece.color == @curr_player
+  end
+  
+  def get_mouse_grid
+    mouse = []
+    mouse = mouse_x, mouse_y
+    [((mouse[1] - 10) / 75).to_i,((mouse[0] - 10) / 75).to_i]
+  end
+
+  def grid_to_pixel(x, y, z = 0.5)
+    [(y * 75 + 10).to_i, (x * 75 + 10).to_i,z]
+  end
+
+  def draw
+    @background_image.draw(0,0,0)
+    @board.all_pieces.each { |piece| piece.draw unless piece == @click_hold_piece }
+  end
+    
+  def get_turn
+    @curr_player
   end
   
   def switch_player
-    @curr_player = (@curr_player == :W ? :B : :W)
+    @curr_player = @curr_player == :W ? :B : :W
   end
 
   def game_complete?
     @board.checkmate?(:W) || @board.checkmate?(:B)
   end
   
-  def get_user_input
-    
-    store = gets.chomp.split(",")
-    [Integer(store[0]),Integer(store[-1])]
-  end
-  
   def get_user_piece(pos)
     @board.grid[pos[0]][pos[1]]
   end
   
-  def play_turn(color)
-    begin 
-      puts "Input your move coordinates separated by comma"
-      "U+2654"
-      piece_to_move = get_user_piece(get_user_input)
-      if piece_to_move.nil? || piece_to_move.color != color
-        raise InvalidMoveError, "This is not one of your pieces!"
-      end 
-      puts "Input your move coordinates destination"
-      dest = get_user_input
-      @board.move(piece_to_move.pos, dest)      
-      
-    rescue InvalidMoveError => e
-      puts e.message
-      retry
-    end
+  def get_piece_at_mouse
+    mouse_pos = @window.get_mouse_grid
+    @board.get_piece(mouse_pos)
   end
-  
+end
+
+class MousePosError < StandardError
+  def initialize(message)
+    super(message)
+  end
 end
