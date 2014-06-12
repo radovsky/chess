@@ -25,8 +25,7 @@ class ChessGame < Gosu::Window
 
   end
   
-  def button_down(id)
-    
+  def button_down(id)    
     if id == Gosu::MsLeft
       puts "Storing starting pos #{get_mouse_grid}}"
       @starting_pos = get_mouse_grid
